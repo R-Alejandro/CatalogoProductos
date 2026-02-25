@@ -39,75 +39,23 @@ public class ProductController : Controller
         ViewBag.Categories = _productService.GetCategories();
         return View();
     }
-    
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Create(Product product, List<IFormFile> files, int principalIndex)
+    public async Task<IActionResult> Create(Product product, List<IFormFile> files, int principalIndex)
     {
-
-        ViewBag.Categories = _context.Categories.ToList();
+        ViewBag.Categories = _productService.GetCategories();
         
-        if(files == null || files.Count == 0)
-            ModelState.AddModelError("", "Debe agregar minimo una imagen");
-        
-        foreach(var f in files)
+        var result = await _productService.CreateAsync(product, files, principalIndex);
+        //el contenedor
+        if (!result.Success)
         {
-            var ext = Path.GetExtension(f.FileName).ToLower();
-            if(ext != ".jpg" && ext != ".png")
-                ModelState.AddModelError("", "Solo se permiten imagenes JPG o PNG");
-        }
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error);
 
-        if (!ModelState.IsValid)
-        {
-            ViewBag.Categories = _context.Categories.ToList();
             return View(product);
         }
         
-        product.CreatedAt = DateTime.Now;
-
-        _context.Products.Add(product);
-        _context.SaveChanges();
-        
-
-        for (int i = 0; i < files.Count; i++)
-        {
-            var file = files[i];
-            string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-            string path = Path.Combine(_env.WebRootPath, "images", fileName);
-
-            using (var stream = new FileStream(path, FileMode.Create))
-            {
-                file.CopyTo(stream);
-            }
-            var image = new Image
-            {
-                Name = file.FileName,
-                FileName = fileName,
-                Path = "/images/" + fileName,
-                ProductId = product.Id,
-                IsPrincipal = false
-            };
-
-            _context.Images.Add(image);
-        }
-
-        _context.SaveChanges();
-
-
-        var images = _context.Images.Where(i => i.ProductId == product.Id).ToList();
-        if (images.Count == 1)
-        {
-            images[0].IsPrincipal = true;
-        }
-        else
-        {
-            if (principalIndex < 0 || principalIndex >= images.Count)
-                principalIndex = 0;
-            images[principalIndex].IsPrincipal = true;
-        }
-
-        _context.SaveChanges();
-
         return RedirectToAction("Index");
     }
     

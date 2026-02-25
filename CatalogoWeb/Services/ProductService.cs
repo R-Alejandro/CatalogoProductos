@@ -9,15 +9,24 @@ public interface IProductService
 {
     List<Product> FilterProducts(ProductFilterViewModel filters);
     List<Category> GetCategories();
+    Task<ServiceResult> CreateAsync(Product product, List<IFormFile> files, int principalIndex);
 }
 
+//contenedor para obtener errores, tal vez una Task???? pero es muy
+public class ServiceResult
+{
+    public bool Success => !Errors.Any();
+    public List<string> Errors { get; set; } = new();
+}
 public class ProductService : IProductService
 {
+    private readonly IWebHostEnvironment _env;
     private readonly AppDbContext _context;
 
-    public ProductService(AppDbContext context)
+    public ProductService(AppDbContext context, IWebHostEnvironment env)
     {
         _context = context;
+        _env = env;
     }
     
     public List<Product> FilterProducts(ProductFilterViewModel filters)
@@ -65,5 +74,68 @@ public class ProductService : IProductService
     public List<Category> GetCategories()
     {
         return _context.Categories.ToList();
+    }
+    
+    public async Task<ServiceResult> CreateAsync(Product product, List<IFormFile> files, int principalIndex)
+    {
+        var result = new ServiceResult();
+
+        if (files == null || files.Count == 0)
+            result.Errors.Add("Debe agregar minimo una imagen");
+
+        foreach (var f in files)
+        {
+            var ext = Path.GetExtension(f.FileName).ToLower();
+            if (ext != ".jpg" && ext != ".png")
+                result.Errors.Add("Solo se permiten imagenes JPG o PNG");
+        }
+
+        if (!result.Success)
+            return result;
+
+        product.CreatedAt = DateTime.Now;
+
+        _context.Products.Add(product);
+        await _context.SaveChangesAsync();
+
+        var images = new List<Image>();
+
+        for (int i = 0; i < files.Count; i++)
+        {
+            var file = files[i];
+            string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+            string path = Path.Combine(_env.WebRootPath, "images", fileName);
+
+            using (var stream = new FileStream(path, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            images.Add(new Image
+            {
+                Name = file.FileName,
+                FileName = fileName,
+                Path = "/images/" + fileName,
+                ProductId = product.Id,
+                IsPrincipal = false
+            });
+        }
+
+        if (images.Count == 1)
+        {
+            images[0].IsPrincipal = true;
+        }
+        else
+        {
+            if (principalIndex < 0 || principalIndex >= images.Count)
+                principalIndex = 0;
+
+            images[principalIndex].IsPrincipal = true;
+        }
+
+        _context.Images.AddRange(images);
+        await _context.SaveChangesAsync();
+
+        return result;
     }
 }
