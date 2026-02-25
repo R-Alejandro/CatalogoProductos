@@ -1,13 +1,27 @@
+@{
+    Layout = null;
+}
 
-<!DOCTYPE html>
+<h2>Login</h2>
 
-<html>
-<head>
-    <title>un login</title>
-</head>
-<body>
-<div>
-      login
-</div>
-</body>
-</html>
+<form method="post">
+    <div>
+        Nickname
+        <input name="username" />
+    </div>
+    <div>
+        Password
+        <input
+            type="password"
+            name="password"
+        />
+    </div>
+    <button>Login</button>
+</form>
+
+@if(ViewBag.Error!=null)
+{
+    <p>@ViewBag.Error</p>
+}
+
+<a href="/Account/Register">Registrarse</a>

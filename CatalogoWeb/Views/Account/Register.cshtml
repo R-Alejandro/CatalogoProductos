@@ -1,3 +1,7 @@
+@{
+    Layout = null;
+}
+
 <h2>Registro</h2>
 
 <form method="post">
@@ -16,7 +20,7 @@
 
 @if(ViewBag.Error!=null)
 {
-    <p>
-        @ViewBag.Error
-    </p>
+    <p>@ViewBag.Error</p>
 }
+
+<a href="/Account/Login">Inicia Sesion</a>

@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Authorization;
 namespace CatalogoWeb.Controllers;
 
 [Authorize]
+[ResponseCache(
+    NoStore = true,
+    Location = ResponseCacheLocation.None
+)]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;

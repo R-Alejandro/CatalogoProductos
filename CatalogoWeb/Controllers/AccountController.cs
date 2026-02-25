@@ -3,7 +3,12 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using CatalogoWeb.Data;
 using CatalogoWeb.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
+[AllowAnonymous]
 public class AccountController : Controller
 {
     private readonly AppDbContext _context;
@@ -12,9 +17,57 @@ public class AccountController : Controller
         _context = context;
     }
     
+    [HttpPost]
+    public async Task<IActionResult> Login(string username, string password)
+    {
+        var user = await _context.Users
+            .Include(u => u.Rol)
+            .FirstOrDefaultAsync(u => u.Username == username);
+        if (user == null)
+        {
+            ViewBag.Error = "Usuario no encontrado";
+            return View();
+        }
+        
+        var hasher = new PasswordHasher<User>();
+        var result = hasher.VerifyHashedPassword(
+            user,
+            user.PasswordHash,
+            password
+        );
+        
+        if (result == PasswordVerificationResult.Failed)
+        {
+            ViewBag.Error = "Password incorrecto";
+            return View();
+        }
+        
+        var claims = new List<Claim>()
+        {
+            new Claim(ClaimTypes.Name,user.Username),
+            new Claim(ClaimTypes.Role,user.Rol.Name)
+        };
+        
+        var identity = new ClaimsIdentity(
+            claims,
+            CookieAuthenticationDefaults.AuthenticationScheme
+        );
+        
+        var principal = new ClaimsPrincipal(identity);
+        await HttpContext.SignInAsync(principal);
+        return RedirectToAction("Index", "Product");
+    }
+    
     [HttpGet]
     public IActionResult Login()
     {
+        if (User.Identity.IsAuthenticated)
+        {
+            return RedirectToAction(
+                "Index",
+                "Product"
+            );
+        }
         return View();
     }
     
