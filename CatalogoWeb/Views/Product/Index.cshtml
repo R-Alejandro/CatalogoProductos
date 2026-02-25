@@ -44,15 +44,14 @@
                     <option value="@c.Id">@c.Name</option>
                 }
             }
-
-            @* Opción para productos sin categoría *@
+            
             @if (Model.CategoryIds != null && Model.CategoryIds.Contains(0))
             {
-                <option value="0" selected>Sin categoría</option>
+                <option value="0" selected>Sin categoria</option>
             }
             else
             {
-                <option value="0">Sin categoría</option>
+                <option value="0">Sin categoria</option>
             }
         </select>
     </div>

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using CatalogoWeb.Data;
 using Microsoft.EntityFrameworkCore;
 using CatalogoWeb.Models;
+using CatalogoWeb.Services;
 using CatalogoWeb.ViewModels;
 
 namespace CatalogoWeb.Controllers;
@@ -16,54 +17,19 @@ public class ProductController : Controller
 {
     private readonly AppDbContext _context;
     private readonly IWebHostEnvironment _env;
-    public ProductController(AppDbContext context, IWebHostEnvironment env)
+    private readonly IProductService _productService;
+
+    public ProductController(AppDbContext context, IWebHostEnvironment env, IProductService productService)
     {
         _context = context;
         _env = env;
+        _productService = productService;
     }
     
     public IActionResult Index(ProductFilterViewModel filters)
     {
-    
-        var products = _context.Products
-            .Include(p => p.Category)
-            .Include(p => p.Images)
-            .ToList();
-        
-        if (!string.IsNullOrWhiteSpace(filters.Name))
-            products = products.Where(p => p.Name.ToLower().Contains(filters.Name.ToLower())).ToList();
-
-        if (filters.QuantityFrom.HasValue)
-            products = products.Where(p => p.Quantity >= filters.QuantityFrom.Value).ToList();
-
-        if (filters.QuantityTo.HasValue)
-            products = products.Where(p => p.Quantity <= filters.QuantityTo.Value).ToList();
-
-        if (filters.PriceFrom.HasValue)
-            products = products.Where(p => p.Price >= filters.PriceFrom.Value).ToList();
-
-        if (filters.PriceTo.HasValue)
-            products = products.Where(p => p.Price <= filters.PriceTo.Value).ToList();
-
-        if (filters.DateFrom.HasValue)
-            products = products.Where(p => p.CreatedAt.Date >= filters.DateFrom.Value.Date).ToList();
-
-        if (filters.DateTo.HasValue)
-            products = products.Where(p => p.CreatedAt.Date <= filters.DateTo.Value.Date).ToList();
-        
-    
-        if (filters.CategoryIds != null && filters.CategoryIds.Any())
-        {
-            bool includeNull = filters.CategoryIds.Contains(0);
-            var selectedIds = filters.CategoryIds.Where(id => id != 0).ToList();
-
-            products = products.Where(p =>
-                (p.CategoryId != null && selectedIds.Contains(p.CategoryId.Value)) ||
-                (includeNull && p.CategoryId == null)).ToList();
-        }
-
-        filters.Products = products;
-        filters.Categories = _context.Categories.ToList();
+        filters.Products = _productService.FilterProducts(filters);
+        filters.Categories = _productService.GetCategories();
 
         return View(filters);
     }
