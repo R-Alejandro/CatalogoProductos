@@ -78,7 +78,7 @@
     {
         <tr>
             <td>@p.Name</td>
-            <td>@p.Price</td>
+            <td>@p.Price.ToString("C", new System.Globalization.CultureInfo("es-CO")) COP</td>
             <td>@(p.Category?.Name ?? "Sin categoría")</td>
             <td>@p.Quantity</td>
             <td>
