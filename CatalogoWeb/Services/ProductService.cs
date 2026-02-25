@@ -1,7 +1,6 @@
 using CatalogoWeb.Models;
 using CatalogoWeb.ViewModels;
-using CatalogoWeb.Data;
-using Microsoft.EntityFrameworkCore;
+using CatalogoWeb.Repositories;
 
 namespace CatalogoWeb.Services;
 
@@ -10,6 +9,7 @@ public interface IProductService
     List<Product> FilterProducts(ProductFilterViewModel filters);
     List<Category> GetCategories();
     Task<ServiceResult> CreateAsync(Product product, List<IFormFile> files, int principalIndex);
+    Task<Product?> GetProductDetailsAsync(int id);
 }
 
 //contenedor para obtener errores, tal vez una Task???? pero es muy
@@ -21,21 +21,27 @@ public class ServiceResult
 public class ProductService : IProductService
 {
     private readonly IWebHostEnvironment _env;
-    private readonly AppDbContext _context;
+    private readonly IProductRepository _productRepository;
+    private readonly ICategoryRepository _categoryRepository;
+    private readonly IImageRepository _imageRepository;
 
-    public ProductService(AppDbContext context, IWebHostEnvironment env)
+    public ProductService(
+        IProductRepository repository, 
+        ICategoryRepository categoryRepository,
+        IImageRepository imageRepository,
+        IWebHostEnvironment env
+        )
     {
-        _context = context;
+        _productRepository = repository;
+        _categoryRepository = categoryRepository;
+        _imageRepository = imageRepository;
         _env = env;
     }
     
     public List<Product> FilterProducts(ProductFilterViewModel filters)
     {
-        //puede ir para repository? diria que si
-        var products = _context.Products
-            .Include(p => p.Category)
-            .Include(p => p.Images)
-            .AsQueryable(); 
+
+        var products = _productRepository.GetAll();
         
         if (!string.IsNullOrWhiteSpace(filters.Name))
             products = products.Where(p => p.Name.ToLower().Contains(filters.Name.ToLower()));
@@ -73,7 +79,7 @@ public class ProductService : IProductService
 
     public List<Category> GetCategories()
     {
-        return _context.Categories.ToList();
+        return _categoryRepository.GetAll().ToList();
     }
     
     public async Task<ServiceResult> CreateAsync(Product product, List<IFormFile> files, int principalIndex)
@@ -94,9 +100,8 @@ public class ProductService : IProductService
             return result;
 
         product.CreatedAt = DateTime.Now;
-
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        
+        await _productRepository.AddAsync(product);
 
         var images = new List<Image>();
 
@@ -132,10 +137,13 @@ public class ProductService : IProductService
 
             images[principalIndex].IsPrincipal = true;
         }
-
-        _context.Images.AddRange(images);
-        await _context.SaveChangesAsync();
-
+        
+        await _imageRepository.AddRangeAsync(images);
         return result;
+    }
+    
+    public async Task<Product?> GetProductDetailsAsync(int id)
+    {
+        return await _productRepository.GetByIdAsync(id);
     }
 }

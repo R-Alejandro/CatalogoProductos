@@ -59,13 +59,10 @@ public class ProductController : Controller
         return RedirectToAction("Index");
     }
     
-    public IActionResult Details(int id)
+    public async Task<IActionResult> Details(int id)
     {
-        var product = _context.Products
-            .Include(p=>p.Images)
-            .Include(p=>p.Category)
-            .FirstOrDefault(p=>p.Id==id);
-
+        var product = await _productService.GetProductDetailsAsync(id);
+        if (product == null) return NotFound();
         return View(product);
     }
     
