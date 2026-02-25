@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using CatalogoWeb.Data;
 using Microsoft.EntityFrameworkCore;
 using CatalogoWeb.Models;
+using CatalogoWeb.ViewModels;
 
 namespace CatalogoWeb.Controllers;
 
@@ -21,14 +22,51 @@ public class ProductController : Controller
         _env = env;
     }
     
-    public IActionResult Index()
+    public IActionResult Index(ProductFilterViewModel filters)
     {
         var products = _context.Products
             .Include(p => p.Category)
             .Include(p => p.Images)
-            .ToList();
+            .AsQueryable();
         
-        return View(products);
+
+        if (!string.IsNullOrWhiteSpace(filters.Name))
+            products = products.Where(p => p.Name.Contains(filters.Name));
+        
+        if (filters.QuantityFrom.HasValue)
+            products = products.Where(p => p.Quantity >= filters.QuantityFrom.Value);
+
+        if (filters.QuantityTo.HasValue)
+            products = products.Where(p => p.Quantity <= filters.QuantityTo.Value);
+
+
+        if (filters.PriceFrom.HasValue)
+            products = products.Where(p => p.Price >= filters.PriceFrom.Value);
+
+        if (filters.PriceTo.HasValue)
+            products = products.Where(p => p.Price <= filters.PriceTo.Value);
+        
+        if (filters.DateFrom.HasValue)
+        {
+            var from = filters.DateFrom.Value.Date;
+            products = products.Where(p => p.CreatedAt.Date >= from);
+        }
+
+        if (filters.DateTo.HasValue)
+        {
+            var to = filters.DateTo.Value.Date;
+            products = products.Where(p => p.CreatedAt.Date <= to);
+        }
+        
+        if (filters.CategoryIds != null && filters.CategoryIds.Count > 0)
+        {
+            products = products.Where(p => filters.CategoryIds.Contains(p.CategoryId.Value));
+        }
+
+        filters.Categories = _context.Categories.ToList();
+        filters.Products = products.ToList();
+
+        return View(filters);
     }
     
     public IActionResult Create()
