@@ -10,6 +10,8 @@ public interface IProductService
     List<Category> GetCategories();
     Task<ServiceResult> CreateAsync(Product product, List<IFormFile> files, int principalIndex);
     Task<Product?> GetProductDetailsAsync(int id);
+    Task<ProductEditViewModel?> GetEditViewModelAsync(int id);
+    Task<List<Category>> GetCategoriesAsync();
 }
 
 //contenedor para obtener errores, tal vez una Task???? pero es muy
@@ -145,5 +147,29 @@ public class ProductService : IProductService
     public async Task<Product?> GetProductDetailsAsync(int id)
     {
         return await _productRepository.GetByIdAsync(id);
+    }
+    
+    public async Task<ProductEditViewModel?> GetEditViewModelAsync(int id)
+    {
+        var product = await _productRepository.GetWithImagesAsync(id);
+
+        if (product == null)
+            return null;
+        
+        ProductEditViewModel productEditViewModel = new ProductEditViewModel
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Quantity = product.Quantity,
+            Price = product.Price,
+            CategoryId = product.CategoryId,
+            ExistingImages = product.Images.ToList()
+        };
+        
+        return productEditViewModel;
+    }
+    public async Task<List<Category>> GetCategoriesAsync()
+    {
+        return await _categoryRepository.GetAllAsync();
     }
 }

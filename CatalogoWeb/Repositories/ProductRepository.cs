@@ -9,6 +9,7 @@ public interface IProductRepository
     IQueryable<Product> GetAll();
     Task AddAsync(Product product);
     Task<Product?> GetByIdAsync(int id);
+    Task<Product?> GetWithImagesAsync(int id);
 }
 public class ProductRepository : IProductRepository
 {
@@ -40,6 +41,15 @@ public class ProductRepository : IProductRepository
             .Include(p=>p.Images)
             .Include(p=>p.Category)
             .FirstOrDefaultAsync(p=>p.Id==id);
+        return product;
+    }
+    
+    public async Task<Product?> GetWithImagesAsync(int id)
+    {
+        var product = await _context.Products
+            .Include(p => p.Images)
+            .FirstOrDefaultAsync(p => p.Id == id);
+        
         return product;
     }
 }

@@ -67,26 +67,14 @@ public class ProductController : Controller
     }
     
     [HttpGet]
-    public IActionResult Edit(int id)
+    public async Task<IActionResult> Edit(int id)
     {
-        var product = _context.Products
-            .Include(p => p.Images)
-            .FirstOrDefault(p => p.Id == id);
-
-        if (product == null) return NotFound();
-
-        var vm = new ProductEditViewModel
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Quantity = product.Quantity,
-            Price = product.Price,
-            CategoryId = product.CategoryId,
-            ExistingImages = product.Images.ToList()
-        };
-
-        ViewBag.Categories = _context.Categories.ToList();
-        return View(vm);
+        var productViewModel = await _productService.GetEditViewModelAsync(id);
+        if (productViewModel == null)
+            return NotFound();
+        
+        ViewBag.Categories = await _productService.GetCategoriesAsync();
+        return View(productViewModel);
     }
     
     [HttpPost]
