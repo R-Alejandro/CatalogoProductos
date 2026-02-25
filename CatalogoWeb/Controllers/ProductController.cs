@@ -15,14 +15,11 @@ namespace CatalogoWeb.Controllers;
 )]
 public class ProductController : Controller
 {
-    private readonly AppDbContext _context;
-    private readonly IWebHostEnvironment _env;
     private readonly IProductService _productService;
 
-    public ProductController(AppDbContext context, IWebHostEnvironment env, IProductService productService)
+    public ProductController(IProductService productService)
     {
-        _context = context;
-        _env = env;
+
         _productService = productService;
     }
     
