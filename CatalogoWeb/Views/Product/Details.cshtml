@@ -1,0 +1,31 @@
+@model CatalogoWeb.Models.Product;
+
+<h2>@Model.Name</h2>
+
+Categoria:
+@Model.Category?.Name
+<br/>
+
+Precio:
+@Model.Price.ToString("C", new System.Globalization.CultureInfo("es-CO"))
+<br/>
+
+Cantidad:
+@Model.Quantity
+<br/>
+
+Creado:
+@Model.CreatedAt.Date.ToString("dd/MM/yyyy")
+<br/><br/>
+
+Imagen Principal:
+<br/>
+<img src="@Model.Images.FirstOrDefault(i=>i.IsPrincipal)?.Path" width="300"/>
+<br/><br/>
+
+Imagenes Secundarias:
+<br/>
+@foreach(var img in Model.Images.Where(i=>!i.IsPrincipal))
+{
+    <img src="@img.Path" width="100"/>
+}

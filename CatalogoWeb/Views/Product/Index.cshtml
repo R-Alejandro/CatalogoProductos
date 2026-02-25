@@ -1,10 +1,29 @@
+@model List<CatalogoWeb.Models.Product>
+<h2>Productos</h2>
 
-<head>
-    <title>productos</title>
-</head>
+<a asp-action="Create">Crear Producto</a>
 
-<div>
-    hola
-</div>
-
-
+<table>
+    <tr>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Categoria</th>
+        <th>Cantidad</th>
+        <th>Imagen</th>
+    </tr>
+    @foreach(var p in Model)
+    {
+        <tr>
+            <td>@p.Name</td>
+            <td>@p.Price</td>
+            <td>@p.Category?.Name</td>
+            <td>@p.Quantity</td>
+            <td>
+                <img src="@p.Images.FirstOrDefault(i=>i.IsPrincipal)?.Path" width="100"/>
+            </td>
+            <td>
+                <a asp-action="Details" asp-route-id="@p.Id">Ver</a>
+            </td>
+        </tr>
+    }
+</table>
