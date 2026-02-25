@@ -36,12 +36,14 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Error/500");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.UseAuthentication();
 app.UseAuthorization();
