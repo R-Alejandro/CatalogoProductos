@@ -12,6 +12,8 @@ public interface IProductService
     Task<Product?> GetProductDetailsAsync(int id);
     Task<ProductEditViewModel?> GetEditViewModelAsync(int id);
     Task<List<Category>> GetCategoriesAsync();
+    Task<ServiceResult> UpdateAsync(ProductEditViewModel vm);
+    Task<List<Image>> GetImagesAsync(int productId);
 }
 
 //contenedor para obtener errores, tal vez una Task???? pero es muy
@@ -171,5 +173,105 @@ public class ProductService : IProductService
     public async Task<List<Category>> GetCategoriesAsync()
     {
         return await _categoryRepository.GetAllAsync();
+    }
+    
+    public async Task<ServiceResult> UpdateAsync(ProductEditViewModel vm)
+    {
+        var result = new ServiceResult();
+        var product = await _productRepository.GetWithImagesAsync(vm.Id);
+        if (product == null)
+        {
+            result.Errors.Add("Producto no encontrado");
+            return result;
+        }
+
+        var idsToDelete = vm.ImagesToDelete ?? new List<int>();
+        var surviving = product.Images.Count(i => !idsToDelete.Contains(i.Id));
+        var newCount = vm.NewFiles?.Count(f => f.Length > 0) ?? 0;
+        var total = surviving + newCount;
+
+        if (total == 0)
+            result.Errors.Add("El producto debe tener al menos una imagen");
+
+        if (vm.NewFiles != null)
+        {
+            foreach (var f in vm.NewFiles.Where(f => f.Length > 0))
+            {
+                var ext = Path.GetExtension(f.FileName).ToLower();
+                if (ext != ".jpg" && ext != ".png")
+                    result.Errors.Add($"'{f.FileName}' no es JPG ni PNG");
+            }
+        }
+
+        if (!result.Success)
+            return result;
+        
+        product.Name = vm.Name;
+        product.Quantity = vm.Quantity;
+        product.Price = vm.Price;
+        product.CategoryId = vm.CategoryId;
+        
+        foreach (var imgId in idsToDelete)
+        {
+            var img = product.Images.FirstOrDefault(i => i.Id == imgId);
+            if (img == null) continue;
+            
+            var physicalPath = Path.Combine(_env.WebRootPath, "images", img.FileName);
+            if (System.IO.File.Exists(physicalPath))
+                System.IO.File.Delete(physicalPath);
+
+            await _imageRepository.DeleteAsync(img);
+        }
+        
+        var savedNewImages = new List<Image>();
+        if (vm.NewFiles != null)
+        {
+            foreach (var file in vm.NewFiles.Where(f => f.Length > 0))
+            {
+                string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+                string path = Path.Combine(_env.WebRootPath, "images", fileName);
+                using (var stream = new FileStream(path, FileMode.Create))
+                    await file.CopyToAsync(stream);
+
+                var img = new Image
+                {
+                    Name = file.FileName,
+                    FileName = fileName,
+                    Path = "/images/" + fileName,
+                    ProductId = vm.Id,
+                    IsPrincipal = false
+                };
+
+                await _imageRepository.AddAsync(img);
+                savedNewImages.Add(img);
+            }
+        }
+        
+        var allImages = await _imageRepository.GetByProductIdAsync(vm.Id);
+        foreach (var img in allImages)
+            img.IsPrincipal = false;
+
+        Image? principal = null;
+        if (!string.IsNullOrEmpty(vm.PrincipalImageKey))
+        {
+            var parts = vm.PrincipalImageKey.Split('_');
+            if (parts.Length == 2)
+            {
+                if (parts[0] == "existing" && int.TryParse(parts[1], out int existId))
+                    principal = allImages.FirstOrDefault(i => i.Id == existId);
+                else if (parts[0] == "new" && int.TryParse(parts[1], out int newIdx))
+                    principal = savedNewImages.ElementAtOrDefault(newIdx);
+            }
+        }
+
+        principal ??= allImages.FirstOrDefault();
+        if (principal != null)
+            principal.IsPrincipal = true;
+        await _productRepository.SaveChangesAsync();
+        return result;
+    }
+    public async Task<List<Image>> GetImagesAsync(int productId)
+    {
+        return await _imageRepository.GetByProductIdAsync(productId);
     }
 }

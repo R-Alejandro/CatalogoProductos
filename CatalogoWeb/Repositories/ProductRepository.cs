@@ -10,6 +10,7 @@ public interface IProductRepository
     Task AddAsync(Product product);
     Task<Product?> GetByIdAsync(int id);
     Task<Product?> GetWithImagesAsync(int id);
+    Task SaveChangesAsync();
 }
 public class ProductRepository : IProductRepository
 {
@@ -51,5 +52,10 @@ public class ProductRepository : IProductRepository
             .FirstOrDefaultAsync(p => p.Id == id);
         
         return product;
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
     }
 }
