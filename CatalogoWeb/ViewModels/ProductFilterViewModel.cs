@@ -14,7 +14,10 @@ public class ProductFilterViewModel
     public DateTime? DateFrom { get; set; }
     [DataType(DataType.Date)]
     public DateTime? DateTo { get; set; }
+
     public List<int>? CategoryIds { get; set; } = new();
-    public List<Category>? Categories { get; set; } = new();
-    public List<Product>? Products { get; set; } = new();
+    
+    public List<Category> Categories { get; set; } = new();
+    public List<Product> Products { get; set; } = new();
 }
+

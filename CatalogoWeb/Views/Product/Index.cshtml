@@ -1,6 +1,7 @@
 @model CatalogoWeb.ViewModels.ProductFilterViewModel
 
 <h2>Productos</h2>
+
 <form method="get">
     <div>
         <label>Nombre:</label>
@@ -30,7 +31,6 @@
 
     <div>
         <label>Categorías:</label>
-
         <select name="CategoryIds" multiple="multiple">
             @foreach (var c in Model.Categories)
             {
@@ -42,6 +42,16 @@
                 {
                     <option value="@c.Id">@c.Name</option>
                 }
+            }
+
+            @* Opción para productos sin categoría *@
+            @if (Model.CategoryIds != null && Model.CategoryIds.Contains(0))
+            {
+                <option value="0" selected>Sin categoría</option>
+            }
+            else
+            {
+                <option value="0">Sin categoría</option>
             }
         </select>
     </div>
@@ -61,19 +71,21 @@
         <th>Categoria</th>
         <th>Cantidad</th>
         <th>Imagen</th>
+        <th>Acciones</th>
     </tr>
     @foreach(var p in Model.Products)
     {
         <tr>
             <td>@p.Name</td>
             <td>@p.Price</td>
-            <td>@p.Category?.Name</td>
+            <td>@(p.Category?.Name ?? "Sin categoría")</td>
             <td>@p.Quantity</td>
             <td>
-                <img src="@p.Images.FirstOrDefault(i=>i.IsPrincipal)?.Path" width="100"/>
+                <img src="@p.Images.FirstOrDefault(i => i.IsPrincipal)?.Path" width="100" />
             </td>
             <td>
                 <a asp-action="Details" asp-route-id="@p.Id">Ver</a>
+                <a asp-action="Edit" asp-route-id="@p.Id">Editar</a>
             </td>
         </tr>
     }

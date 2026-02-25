@@ -1,6 +1,7 @@
 @model CatalogoWeb.Models.Product
 
 <h2>Crear Producto</h2>
+
 <div asp-validation-summary="All" style="color:red"></div>
 
 <form asp-controller="Product" asp-action="Create" method="post" enctype="multipart/form-data">
@@ -37,16 +38,47 @@
     </div>
 
     <div>
-        <label>Imagenes</label>
-        <input type="file" name="files" multiple accept=".jpg,.png" />
+        <label>Imagenes (mínimo 1)</label>
+        <input type="file" id="imageFiles" name="files" multiple accept=".jpg,.png" />
     </div>
 
-    <div>
-        <label>Indice imagen principal (0 = primera)</label>
-        <input name="principalIndex" type="number" value="0" min="0"/>
+    <div id="principalSelector" style="margin-top:10px; display:none;">
+        <label>Seleccione la imagen principal:</label>
+        <div id="radioContainer"></div>
     </div>
 
     <div style="margin-top:10px;">
         <button type="submit">Guardar</button>
     </div>
 </form>
+
+@section Scripts {
+<script>
+    // Cuando se seleccionan archivos, generamos radio buttons para elegir principal
+    const fileInput = document.getElementById("imageFiles");
+    const radioContainer = document.getElementById("radioContainer");
+    const principalDiv = document.getElementById("principalSelector");
+
+    fileInput.addEventListener("change", function() {
+        radioContainer.innerHTML = ""; // limpiar
+        if(this.files.length > 1) {
+            principalDiv.style.display = "block";
+            for(let i=0; i < this.files.length; i++) {
+                const file = this.files[i];
+                const label = document.createElement("label");
+                label.style.display = "block";
+                const radio = document.createElement("input");
+                radio.type = "radio";
+                radio.name = "principalIndex";
+                radio.value = i;
+                if(i === 0) radio.checked = true; // primera por defecto
+                label.appendChild(radio);
+                label.appendChild(document.createTextNode(" " + file.name));
+                radioContainer.appendChild(label);
+            }
+        } else {
+            principalDiv.style.display = "none";
+        }
+    });
+</script>
+}

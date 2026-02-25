@@ -1,0 +1,139 @@
+@model CatalogoWeb.ViewModels.ProductEditViewModel
+
+<h2>Editar Producto</h2>
+
+<div asp-validation-summary="All" style="color:red"></div>
+
+<form asp-controller="Product" asp-action="Edit" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div>
+        <label>Nombre</label>
+        <input asp-for="Name" />
+        <span asp-validation-for="Name" style="color:red"></span>
+    </div>
+
+    <div>
+        <label>Cantidad</label>
+        <input asp-for="Quantity" type="number" />
+        <span asp-validation-for="Quantity" style="color:red"></span>
+    </div>
+
+    <div>
+        <label>Precio</label>
+        <input asp-for="Price" type="number" step="0.01" />
+        <span asp-validation-for="Price" style="color:red"></span>
+    </div>
+
+    <div>
+        <label>Categoría</label>
+        <select asp-for="CategoryId">
+            <option value="">Seleccione</option>
+            @foreach (var c in ViewBag.Categories)
+            {
+                <option value="@c.Id">@c.Name</option>
+            }
+        </select>
+        <span asp-validation-for="CategoryId" style="color:red"></span>
+    </div>
+
+    <!-- ══ IMÁGENES EXISTENTES ══════════════════════════════════════════ -->
+    <h4 style="margin-top:20px;">Imágenes actuales</h4>
+    <div style="display:flex; flex-wrap:wrap; gap:16px;">
+        @foreach (var img in Model.ExistingImages)
+        {
+            <div id="card-existing-@img.Id"
+                 style="border:2px solid #ccc; padding:8px; border-radius:6px; text-align:center; width:140px;">
+
+                <img src="@img.Path" width="120" height="120"
+                     style="object-fit:cover; border-radius:4px;" />
+
+                <div style="margin-top:6px;">
+                    <!-- Radio para elegir como principal -->
+                    <label>
+                        <input type="radio"
+                               name="PrincipalImageKey"
+                               value="existing_@img.Id"
+                               @(img.IsPrincipal ? "checked" : "") />
+                        Principal
+                    </label>
+                </div>
+
+                <div style="margin-top:4px;">
+                    <!-- Checkbox para marcar como eliminada -->
+                    <label style="color:red;">
+                        <input type="checkbox"
+                               name="ImagesToDelete"
+                               value="@img.Id"
+                               onchange="onDeleteToggle(this, 'existing_@img.Id')" />
+                        Eliminar
+                    </label>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- ══ NUEVAS IMÁGENES ══════════════════════════════════════════════ -->
+    <h4 style="margin-top:20px;">Agregar imágenes nuevas</h4>
+    <input type="file" id="newFiles" name="NewFiles" multiple accept=".jpg,.png" />
+
+    <!-- Preview + radio de nuevas imágenes -->
+    <div id="newImagesPreview" style="display:flex; flex-wrap:wrap; gap:16px; margin-top:12px;"></div>
+
+    <div style="margin-top:16px;">
+        <button type="submit">Guardar cambios</button>
+        <a asp-action="Index" style="margin-left:10px;">Cancelar</a>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+    // ── Preview de nuevas imágenes con radio de principal ────────────────
+    const fileInput   = document.getElementById("newFiles");
+    const previewZone = document.getElementById("newImagesPreview");
+
+    fileInput.addEventListener("change", function () {
+        previewZone.innerHTML = "";
+        Array.from(this.files).forEach((file, idx) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const card = document.createElement("div");
+                card.id = `card-new-${idx}`;
+                card.style.cssText = "border:2px solid #ccc;padding:8px;border-radius:6px;text-align:center;width:140px;";
+
+                card.innerHTML = `
+                    <img src="${e.target.result}"
+                         style="width:120px;height:120px;object-fit:cover;border-radius:4px;" />
+                    <div style="margin-top:6px;">
+                        <label>
+                            <input type="radio"
+                                   name="PrincipalImageKey"
+                                   value="new_${idx}" />
+                            Principal
+                        </label>
+                    </div>
+                    <small style="color:#666;">${file.name}</small>
+                `;
+                previewZone.appendChild(card);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    // ── Al marcar "Eliminar": deshabilitar su radio y tachar la tarjeta ──
+    function onDeleteToggle(checkbox, radioValue) {
+        const cardId   = "card-" + radioValue;          // e.g. "card-existing_5"
+        const card     = document.getElementById(cardId);
+        const radio    = card ? card.querySelector('input[type="radio"]') : null;
+
+        if (checkbox.checked) {
+            if (card)  card.style.opacity = "0.35";
+            if (radio) { radio.disabled = true; radio.checked = false; }
+        } else {
+            if (card)  card.style.opacity = "1";
+            if (radio) radio.disabled = false;
+        }
+    }
+</script>
+}
