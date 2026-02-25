@@ -36,7 +36,7 @@ public class ProductController : Controller
     
     public IActionResult Create()
     {
-        ViewBag.Categories = _context.Categories.ToList();
+        ViewBag.Categories = _productService.GetCategories();
         return View();
     }
     
