@@ -97,26 +97,23 @@ public class ProductController : Controller
             ViewBag.Categories = _context.Categories.ToList();
             return View(product);
         }
-            
         
         product.CreatedAt = DateTime.Now;
 
         _context.Products.Add(product);
         _context.SaveChanges();
         
-        int index = 0;
 
-        foreach(var file in files)
+        for (int i = 0; i < files.Count; i++)
         {
+            var file = files[i];
             string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-
             string path = Path.Combine(_env.WebRootPath, "images", fileName);
 
-            using(var stream = new FileStream(path, FileMode.Create))
+            using (var stream = new FileStream(path, FileMode.Create))
             {
                 file.CopyTo(stream);
             }
-
             var image = new Image
             {
                 Name = file.FileName,
@@ -127,19 +124,20 @@ public class ProductController : Controller
             };
 
             _context.Images.Add(image);
-
-            index++;
         }
+
         _context.SaveChanges();
-        
-        var images = _context.Images.Where(i=>i.ProductId==product.Id).ToList();
-        
-        if(images.Count == 1)
+
+        // imagen principal
+        var images = _context.Images.Where(i => i.ProductId == product.Id).ToList();
+        if (images.Count == 1)
         {
             images[0].IsPrincipal = true;
         }
         else
         {
+            if (principalIndex < 0 || principalIndex >= images.Count)
+                principalIndex = 0;
             images[principalIndex].IsPrincipal = true;
         }
 
