@@ -24,6 +24,7 @@ public class ProductController : Controller
     
     public IActionResult Index(ProductFilterViewModel filters)
     {
+    
         var products = _context.Products
             .Include(p => p.Category)
             .Include(p => p.Images)
@@ -49,8 +50,8 @@ public class ProductController : Controller
 
         if (filters.DateTo.HasValue)
             products = products.Where(p => p.CreatedAt.Date <= filters.DateTo.Value.Date).ToList();
-
-
+        
+    
         if (filters.CategoryIds != null && filters.CategoryIds.Any())
         {
             bool includeNull = filters.CategoryIds.Contains(0);
@@ -181,7 +182,6 @@ public class ProductController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult Edit(ProductEditViewModel vm)
     {
-
         vm.ExistingImages = _context.Images
             .Where(i => i.ProductId == vm.Id)
             .ToList();
@@ -212,9 +212,9 @@ public class ProductController : Controller
         var product = _context.Products.FirstOrDefault(p => p.Id == vm.Id);
         if (product == null) return NotFound();
 
-        product.Name       = vm.Name;
-        product.Quantity   = vm.Quantity;
-        product.Price      = vm.Price;
+        product.Name = vm.Name;
+        product.Quantity = vm.Quantity;
+        product.Price = vm.Price;
         product.CategoryId = vm.CategoryId;
         
         foreach (var imgId in idsToDelete)

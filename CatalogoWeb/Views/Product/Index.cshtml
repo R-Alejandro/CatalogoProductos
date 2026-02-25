@@ -31,6 +31,7 @@
 
     <div>
         <label>Categorías:</label>
+        <input type="hidden" name="CategoryIds" value="" />
         <select name="CategoryIds" multiple="multiple">
             @foreach (var c in Model.Categories)
             {

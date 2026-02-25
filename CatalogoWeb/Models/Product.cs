@@ -16,9 +16,8 @@ public class Product
     [Required(ErrorMessage = "El precio es obligatorio")]
     [Range(0.01, double.MaxValue, ErrorMessage = "El precio debe ser mayor a 0")]
     public decimal Price { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
     
-    [Required(ErrorMessage = "Debe seleccionar una categoria")]
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
     public int? CategoryId { get; set; }
     public Category? Category { get; set; }
     public List<Image> Images { get; set; } = new();

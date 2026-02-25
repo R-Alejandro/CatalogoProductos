@@ -26,15 +26,15 @@
     </div>
 
     <div>
-        <label>Categoria</label>
-        <select asp-for="CategoryId">
-            <option value="">Seleccione</option>
+        <label>Categoria <span style="color:red">*</span></label>
+        <select asp-for="CategoryId" id="categorySelect">
+            <option value="">Seleccione una categoría</option>
             @foreach(var c in ViewBag.Categories)
             {
                 <option value="@c.Id">@c.Name</option>
             }
         </select>
-        <span asp-validation-for="CategoryId" style="color:red"></span>
+        <span id="categoryError" style="color:red; display:none;">Debe seleccionar una categoría</span>
     </div>
 
     <div>
@@ -48,19 +48,21 @@
     </div>
 
     <div style="margin-top:10px;">
-        <button type="submit">Guardar</button>
+        <button type="submit" id="submitBtn">Guardar</button>
     </div>
 </form>
 
 @section Scripts {
 <script>
-    // Cuando se seleccionan archivos, generamos radio buttons para elegir principal
     const fileInput = document.getElementById("imageFiles");
     const radioContainer = document.getElementById("radioContainer");
     const principalDiv = document.getElementById("principalSelector");
+    const categorySelect = document.getElementById("categorySelect");
+    const categoryError = document.getElementById("categoryError");
+    const submitBtn = document.getElementById("submitBtn");
 
     fileInput.addEventListener("change", function() {
-        radioContainer.innerHTML = ""; // limpiar
+        radioContainer.innerHTML = "";
         if(this.files.length > 1) {
             principalDiv.style.display = "block";
             for(let i=0; i < this.files.length; i++) {
@@ -71,13 +73,31 @@
                 radio.type = "radio";
                 radio.name = "principalIndex";
                 radio.value = i;
-                if(i === 0) radio.checked = true; // primera por defecto
+                if(i === 0) radio.checked = true;
                 label.appendChild(radio);
                 label.appendChild(document.createTextNode(" " + file.name));
                 radioContainer.appendChild(label);
             }
         } else {
             principalDiv.style.display = "none";
+        }
+    });
+    
+    submitBtn.addEventListener("click", function(e) {
+        if(categorySelect.value === "") {
+            e.preventDefault();
+            categoryError.style.display = "block";
+            categorySelect.style.border = "2px solid red";
+        } else {
+            categoryError.style.display = "none";
+            categorySelect.style.border = "";
+        }
+    });
+    
+    categorySelect.addEventListener("change", function() {
+        if(this.value !== "") {
+            categoryError.style.display = "none";
+            this.style.border = "";
         }
     });
 </script>
