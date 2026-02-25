@@ -1,5 +1,6 @@
 using CatalogoWeb.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+
+        options.AccessDeniedPath = "/Account/Login";
+    });
 
 
 var app = builder.Build();

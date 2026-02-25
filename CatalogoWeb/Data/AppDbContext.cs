@@ -25,7 +25,7 @@ public class AppDbContext : DbContext
             new Role { Id = 2, Name = "User" }
         );
 
-        //Nota: i should refactor this into a data seeding for ensuring the static data in .HasData()
+        //Nota: deberia mejorar esto con un data seed y evitar problemas con HasData
         modelBuilder.Entity<User>().HasData(
             new User
             {

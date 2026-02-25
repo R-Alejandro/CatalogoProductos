@@ -1,0 +1,22 @@
+<h2>Registro</h2>
+
+<form method="post">
+    
+    Nombre
+    <input name="name"/>
+    
+    Nickname
+    <input name="username"/>
+
+    Password
+    <input type="password" name="password"/>
+
+    <button>Registrarme</button>
+</form>
+
+@if(ViewBag.Error!=null)
+{
+    <p>
+        @ViewBag.Error
+    </p>
+}
