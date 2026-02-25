@@ -2,26 +2,85 @@
     Layout = null;
 }
 
-<h2>Login</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<form method="post">
-    <div>
-        Nickname
-        <input name="username" />
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #4e73df, #1cc88a);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 15px;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #4e73df;
+        }
+
+        .btn-custom {
+            background-color: #4e73df;
+            color: white;
+        }
+
+        .btn-custom:hover {
+            background-color: #2e59d9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card shadow-lg login-card">
+        <div class="card-body p-4">
+            <h3 class="text-center mb-4">Iniciar Sesion</h3>
+
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input name="username" class="form-control" placeholder="Ingresa tu usuario" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Ingresa tu contraseña" required />
+                </div>
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger text-center">
+                        @ViewBag.Error
+                    </div>
+                }
+
+                <div class="d-grid">
+                    <button class="btn btn-custom">Login</button>
+                </div>
+            </form>
+
+            <div class="text-center mt-3">
+                <small>
+                    ¿No tienes cuenta?
+                    <a href="/Account/Register" class="text-decoration-none fw-bold">
+                        Registrarse
+                    </a>
+                </small>
+            </div>
+        </div>
     </div>
-    <div>
-        Password
-        <input
-            type="password"
-            name="password"
-        />
-    </div>
-    <button>Login</button>
-</form>
 
-@if(ViewBag.Error!=null)
-{
-    <p>@ViewBag.Error</p>
-}
-
-<a href="/Account/Register">Registrarse</a>
+</body>
+</html>
