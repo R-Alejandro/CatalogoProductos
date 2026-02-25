@@ -24,3 +24,7 @@ appsettings.Development.json
 docker-compose.override.yml
 **/docker-data/
 **/sqlserver_data/
+
+
+wwwroot/images/*
+!wwwroot/images/README.md
