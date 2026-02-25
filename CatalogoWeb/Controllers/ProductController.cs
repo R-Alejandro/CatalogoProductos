@@ -31,7 +31,7 @@ public class ProductController : Controller
             .ToList();
         
         if (!string.IsNullOrWhiteSpace(filters.Name))
-            products = products.Where(p => p.Name.Contains(filters.Name)).ToList();
+            products = products.Where(p => p.Name.ToLower().Contains(filters.Name.ToLower())).ToList();
 
         if (filters.QuantityFrom.HasValue)
             products = products.Where(p => p.Quantity >= filters.QuantityFrom.Value).ToList();

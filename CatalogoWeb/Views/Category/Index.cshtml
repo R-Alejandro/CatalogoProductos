@@ -1,0 +1,101 @@
+@model List<Category>
+
+@{
+    ViewData["Title"] = "Gestión de Categorías";
+}
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Categorias</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="@Url.Action("Create", "Category")" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nueva Categoria
+            </a>
+        </div>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info" role="alert">
+            No hay categorías registradas. <a href="@Url.Action("Create", "Category")">Crear una nueva</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Productos</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var category in Model)
+                    {
+                        <tr>
+                            <td>@category.Id</td>
+                            <td>@category.Name</td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    @(category.Products?.Count ?? 0)
+                                </span>
+                            </td>
+                            <td>
+                                <a href="@Url.Action("Edit", "Category", new { id = category.Id })" 
+                                   class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteModal_@category.Id">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+
+@foreach (var category in Model)
+{
+    <div class="modal fade" id="deleteModal_@category.Id" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Está seguro de que desea eliminar la categoría <strong>@category.Name</strong>?
+                    @if (category.Products?.Count > 0)
+                    {
+                        <div class="alert alert-warning mt-3">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Esta categoría tiene @category.Products.Count producto(s) asociado(s).
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <form method="post" action="@Url.Action("Delete", "Category", new { id = category.Id })" style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">
+                            Eliminar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
