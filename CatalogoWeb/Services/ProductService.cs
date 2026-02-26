@@ -8,7 +8,6 @@ namespace CatalogoWeb.Services;
 public interface IProductService
 {
     Task<List<Product>> FilterProductsAsync(ProductFilterViewModel filters);
-    List<Category> GetCategories();
     Task<ServiceResult> CreateAsync(Product product, List<IFormFile> files, int principalIndex);
     Task<Product?> GetProductDetailsAsync(int id);
     Task<ProductEditViewModel?> GetEditViewModelAsync(int id);
@@ -82,10 +81,7 @@ public class ProductService : IProductService
         return await products.ToListAsync();
     }
 
-    public List<Category> GetCategories()
-    {
-        return _categoryRepository.GetAll().ToList();
-    }
+
     
     public async Task<ServiceResult> CreateAsync(Product product, List<IFormFile> files, int principalIndex)
     {
