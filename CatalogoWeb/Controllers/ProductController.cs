@@ -41,7 +41,7 @@ public class ProductController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Product product, List<IFormFile> files, int principalIndex)
     {
-        ViewBag.Categories = _productService.GetCategories();
+        ViewBag.Categories = await _productService.GetCategoriesAsync();
         
         var result = await _productService.CreateAsync(product, files, principalIndex);
         //el contenedor
