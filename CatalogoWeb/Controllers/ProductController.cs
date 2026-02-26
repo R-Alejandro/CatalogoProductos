@@ -23,17 +23,17 @@ public class ProductController : Controller
         _productService = productService;
     }
     
-    public IActionResult Index(ProductFilterViewModel filters)
+    public async Task<IActionResult> Index(ProductFilterViewModel filters)
     {
-        filters.Products = _productService.FilterProducts(filters);
-        filters.Categories = _productService.GetCategories();
+        filters.Products = await _productService.FilterProductsAsync(filters);
+        filters.Categories = await _productService.GetCategoriesAsync();
 
         return View(filters);
     }
     
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
-        ViewBag.Categories = _productService.GetCategories();
+        ViewBag.Categories = await _productService.GetCategoriesAsync();
         return View();
     }
 

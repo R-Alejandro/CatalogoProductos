@@ -1,12 +1,13 @@
 using CatalogoWeb.Models;
 using CatalogoWeb.ViewModels;
 using CatalogoWeb.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatalogoWeb.Services;
 
 public interface IProductService
 {
-    List<Product> FilterProducts(ProductFilterViewModel filters);
+    Task<List<Product>> FilterProductsAsync(ProductFilterViewModel filters);
     List<Category> GetCategories();
     Task<ServiceResult> CreateAsync(Product product, List<IFormFile> files, int principalIndex);
     Task<Product?> GetProductDetailsAsync(int id);
@@ -42,7 +43,7 @@ public class ProductService : IProductService
         _env = env;
     }
     
-    public List<Product> FilterProducts(ProductFilterViewModel filters)
+    public async Task<List<Product>> FilterProductsAsync(ProductFilterViewModel filters)
     {
 
         var products = _productRepository.GetAll();
@@ -78,7 +79,7 @@ public class ProductService : IProductService
                 (includeNull && p.CategoryId == null));
         }
         
-        return products.ToList();
+        return await products.ToListAsync();
     }
 
     public List<Category> GetCategories()
