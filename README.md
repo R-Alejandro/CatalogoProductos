@@ -77,7 +77,10 @@ para dar cumplimiento al requerimiento de que se debe contar con un sistema de l
 ---
 
 con las reglas claras de la primera version de funcionalidades que debe realizar nuestro sistema, procedo a diseñar el modelo relacional de base de datos.
-
+---
+![1](db1.png)
+![2](db2.png)
+![3](db3.png)
 ---
 # Ambiente
 
